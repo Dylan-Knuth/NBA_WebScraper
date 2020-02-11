@@ -20,10 +20,19 @@ import org.jsoup.nodes.*;
 
 /**
  *
- * @author Dylan
- * testing github
+ * @author Dylan testing github
  */
 public class NBA_WebScrape {
+
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_BLACK = "\u001B[30m";
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_BLUE = "\u001B[34m";
+    public static final String ANSI_PURPLE = "\u001B[35m";
+    public static final String ANSI_CYAN = "\u001B[36m";
+    public static final String ANSI_WHITE = "\u001B[37m";
 
     /**
      * @param args the command line arguments
@@ -31,11 +40,11 @@ public class NBA_WebScrape {
     public static void main(String[] args) throws IOException {
         // TODO code application logic here
         updateStandings();
-
-        int dayCounter = 1;
-        ArrayList<LinkedHashMap> games = new ArrayList();
         /*
-         for (dayCounter = 8; dayCounter <= 8; dayCounter++) {
+         int dayCounter = 1;
+         ArrayList<LinkedHashMap> games = new ArrayList();
+        
+         for (dayCounter = 9; dayCounter <= 9; dayCounter++) {
 
          String url = "https://www.basketball-reference.com/boxscores/?month=2&day=" + dayCounter + "&year=2020";
          String gameDate = fixGameDate(scrapeGameDate(url)).trim();
@@ -102,23 +111,23 @@ public class NBA_WebScrape {
                     doOldChampStuff(gameDate);
                     champId = getChampId(gameDate, winner[0]);
                     doChampionStuff(champId, winner[0], gameDate);
-                    System.out.println("Champ from file: " + champ);
+                    System.out.println(ANSI_RED + "Losing Champ: " + champ + ANSI_RESET);
                     writeChampFile(champId, winner[0]);
-                    System.out.printf("New champion: %s \n", winner[0]);
+                    System.out.printf(ANSI_GREEN + "New champion: %s \n" + ANSI_RESET, winner[0]);
 
                     champDone = true;
                 }
 
             }
 
-            if (champLost) {
-                System.out.println("Still Champ " + champ);
+            if (!champLost) {
+                System.out.println(ANSI_GREEN + "Still Champ " + champ + ANSI_RESET);
             }
 
             games.add(winnerInfo);
             games.add(loserInfo);
         } catch (Exception ex) {
-            System.out.println("Scrape game ERROR: " + ex);
+            System.out.println(ANSI_RED + "Scrape game ERROR: " + ex + ANSI_RESET);
         }
         return games;
 
@@ -127,6 +136,7 @@ public class NBA_WebScrape {
 
     public static void updateStandings() throws IOException {
         System.out.println("---------Standings--------------");
+        dbConnect conn = new dbConnect();
 
         String url = "https://www.basketball-reference.com/leagues/NBA_2020_standings.html";
         try {
@@ -139,70 +149,45 @@ public class NBA_WebScrape {
 
                     continue;
                 } else {
-                    for (Element teamInfo : eastStandings.select("tr.full_table[data-row='0']")) {
-                        String teamName = teamInfo.select("th.left[data-stat='team_name']").text();
-                        String wins = teamInfo.select("th.right[data-stat='wins']").text();
-                        String loses = teamInfo.select("th.right[data-stat='losses']").text();
+                    //   System.out.printf("%s \n", eastStandings.html());
+
+                    for (Element teamInfo : eastStandings.select("tr.full_table")) {
+                        String teamName = teamInfo.select("th.left[data-stat='team_name']").select("a[href]").text();
+                        String wins = teamInfo.select("td.right[data-stat='wins']").text();
+                        String loses = teamInfo.select("td.right[data-stat='losses']").text();
                         System.out.printf("%s has %s wins and %s loses \n", teamName, wins, loses);
-
-                        System.out.printf("%s \n", teamInfo.text());
-
+                        String teamid = getTeamAbbreviation(teamName);
+                        String conference = "East";
+                        //  System.out.printf("%s \n", teamInfo.outerHtml());
+                        conn.updateStandings(teamid, teamName, wins, loses, conference);
                     }
                 }
             }
 
-            for (Element westStandings : document.select("div#div_confs_standings_W").select("table#confs_standings_W")) {
+            for (Element westStandings : document.select("table#confs_standings_W")) {
 
                 if (westStandings.text().equals("")) {
                     continue;
                 } else {
-                    for (Element teamInfo : westStandings.select("tr.full_table[data-row='0']")) {
-                        String teamName = teamInfo.select("th.left[data-stat='team_name']").text();
-                        String wins = teamInfo.select("th.right[data-stat='wins']").text();
-                        String loses = teamInfo.select("th.right[data-stat='losses']").text();
-
-                        System.out.printf("%s has %s wins and %s loses", teamName, wins, loses);
-
+                    for (Element teamInfo : westStandings.select("tr.full_table")) {
+                        String teamName = teamInfo.select("th.left[data-stat='team_name']").select("a[href]").text();
+                        String wins = teamInfo.select("td.right[data-stat='wins']").text();
+                        String loses = teamInfo.select("td.right[data-stat='losses']").text();
+                        System.out.printf("%s record is %s - %s \n", teamName, wins, loses);
+                        String teamid = getTeamAbbreviation(teamName);
+                        String conference = "West";
+                        //  System.out.printf("%s \n", teamInfo.outerHtml());
+                        conn.updateStandings(teamid, teamName, wins, loses, conference);
                     }
                 }
             }
 
         } catch (Exception ex) {
 
-            System.out.printf("Standing Error: %s", ex);
+            System.out.printf(ANSI_RED + "Standing Error: %s" + ANSI_RESET, ex);
 
         }
-        /*
-         String url = "https://www.basketball-reference.com/leagues/NBA_2020_standings.html";
-         Document document = Jsoup.connect(url).get();
-
-         List<String> teams = new ArrayList<String>();
-         List<String> wins = new ArrayList<String>();
-         List<String> loses = new ArrayList<String>();
-
-         Boolean champDone = false;
-         try {
-         // Western Stangings
-         for (Element westStandings : document.select("table#confs_standings_W.suppress_all.sortable.stats_table.now_sortable")) {
-
-         if (westStandings.text().equals("")) {
-         continue;
-         } else {
-         System.out.println(westStandings);
-         //tr.full_table:nth-of-type(1) > .left
-         //      tr.full_table:nth-of-type(1) > td.right:nth-of-type(1)
-         //            tr.full_table:nth-of-type(1) > td.right:nth-of-type(2)
-         wins.add(westStandings.select("tr.full_table").select("td:nth-of-type(1)").text());
-
-         }
-
-         }
-         } catch (Exception ex) {
-         System.out.println("MAIN ERROR: " + ex);
-         }
-         System.out.println(wins);
-         //dbConnect conn = new dbConnect();
-         */
+        conn.disconnect();
     }
 
     public static void doOldChampStuff(String gameDate) throws IOException {
@@ -340,93 +325,123 @@ public class NBA_WebScrape {
 
         switch (team) {
             case "Atlanta":
+            case "Atlanta Hawks":
                 abrv = "ATL";
                 break;
             case "Brooklyn":
+            case "Brooklyn Nets":
                 abrv = "BKN";
                 break;
             case "Boston":
+            case "Boston Celtics":
                 abrv = "BOS";
                 break;
             case "Charlotte":
+            case "Charlotte Hornets":
                 abrv = "CHA";
                 break;
             case "Chicago":
+            case "Chicago Bulls":
                 abrv = "CHI";
                 break;
             case "Cleveland":
+            case "Cleveland Cavaliers":
                 abrv = "CLE";
                 break;
             case "Dallas":
+            case "Dallas Mavericks":
                 abrv = "DAL";
                 break;
             case "Denver":
+            case "Denver Nuggets":
                 abrv = "DEN";
                 break;
             case "Detroit":
+            case "Detroit Pistons":
                 abrv = "DET";
                 break;
             case "Golden State":
+            case "Golden State Warriors":
                 abrv = "GSW";
                 break;
             case "Houston":
+            case "Houston Rockets":
                 abrv = "HOU";
                 break;
             case "Indiana":
+            case "Indiana Pacers":
                 abrv = "IND";
                 break;
             case "LA Clippers":
+            case "Los Angeles Clippers":
                 abrv = "LAC";
                 break;
             case "LA Lakers":
+            case "Los Angeles Lakers":
                 abrv = "LAL";
                 break;
             case "Memphis":
+            case "Memphis Grizzlies":
                 abrv = "MEM";
                 break;
             case "Miami":
+
+            case "Miami Heat":
                 abrv = "MIA";
                 break;
             case "Milwaukee":
+            case "Milwaukee Bucks":
                 abrv = "MIL";
                 break;
             case "Minnesota":
+            case "Minnesota Timberwolves":
                 abrv = "MIN";
                 break;
             case "New Orleans":
+            case "New Orleans Pelicans":
                 abrv = "NOP";
                 break;
             case "New York":
+            case "New York Knicks":
                 abrv = "NYK";
                 break;
             case "Oklahoma City":
+            case "Oklahoma City Thunder":
                 abrv = "OKC";
                 break;
             case "Orlando":
+            case "Orlando Magic":
                 abrv = "ORL";
                 break;
             case "Philadelphia":
+            case "Philadelphia 76ers":
                 abrv = "PHI";
                 break;
             case "Phoenix":
+            case "Phoenix Suns":
                 abrv = "PHX";
                 break;
             case "Portland":
+            case "Portland Trail Blazers":
                 abrv = "POR";
                 break;
             case "Sacramento":
+            case "Sacramento Kings":
                 abrv = "SAC";
                 break;
             case "San Antonio":
+            case "San Antonio Spurs":
                 abrv = "SAS";
                 break;
-            case "Toronto":
+            case "Toronto Raptors":
                 abrv = "TOR";
                 break;
             case "Utah":
+            case "Utah Jazz":
                 abrv = "UTA";
                 break;
             case "Washington":
+            case "Washington Wizards":
                 abrv = "WAS";
                 break;
         }
