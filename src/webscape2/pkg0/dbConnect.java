@@ -46,16 +46,62 @@ public class dbConnect {
         }
     }
 
-    public void updateStandings(String teamid, String team, String wins, String loses, String conference) {
+    public void importTeamData(String teamid, String team, String city, String conference) {
 
         Statement stmt;
         try {
             stmt = conn.createStatement();
 
-            String query = "UPDATE standings SET conference='" + conference + "'WHERE teamId='" + teamid + "'";
+            String query = "INSERT INTO teams (teamId, name, city, conference) "
+                    + "VALUES ('" + teamid + "', '" + team + "', '" + city + "', '" + conference + "')";
+            int d = stmt.executeUpdate(query);
+            System.out.println(ANSI_GREEN + query + ANSI_RESET);
 
-        //    int d = stmt.executeUpdate(query);
-         //   System.out.println(ANSI_GREEN + query + ANSI_RESET);
+        } catch (Exception ex) {
+            System.out.println(ANSI_RED + " \nDatabase Standings Import Error:" + ex + ANSI_RESET);
+        }
+    }
+
+    public void updateTeamData(String teamid, String team, String city, String conference) {
+
+        Statement stmt;
+        try {
+            stmt = conn.createStatement();
+            String query = "UPDATE teams SET teamName='" + team + "', teamCity='" + city + "', conference='" + conference + "' WHERE teamId='" + teamid + "'";
+            int d = stmt.executeUpdate(query);
+            System.out.println(ANSI_GREEN + query + ANSI_RESET);
+
+        } catch (Exception ex) {
+            System.out.println(ANSI_RED + " \nDatabase Standings Import Error:" + ex + ANSI_RESET);
+        }
+    }
+
+    public void updateStandings(String teamid, String wins, String loses) {
+
+        Statement stmt;
+        try {
+            stmt = conn.createStatement();
+
+            String query = "UPDATE standings SET wins='" + wins + "', loses='" + loses + "' WHERE teamId='" + teamid + "'";
+
+            int d = stmt.executeUpdate(query);
+            System.out.println(ANSI_GREEN + query + ANSI_RESET);
+
+        } catch (Exception ex) {
+            System.out.println(ANSI_RED + " \nDatabase Standings Import Error:" + ex + ANSI_RESET);
+        }
+    }
+
+    public void importStandings(String teamid, String wins, String loses) {
+
+        Statement stmt;
+        try {
+            stmt = conn.createStatement();
+
+            String query = "INSERT INTO standings (teamId, wins, loses) "
+                    + "VALUES ('" + teamid + "', '" + wins + "', '" + loses + "')";
+            int d = stmt.executeUpdate(query);
+            System.out.println(ANSI_GREEN + query + ANSI_RESET);
 
         } catch (Exception ex) {
             System.out.println(ANSI_RED + " \nDatabase Standings Import Error:" + ex + ANSI_RESET);
@@ -71,7 +117,7 @@ public class dbConnect {
             String query = "UPDATE champdata2019 SET toDate='" + date + "'WHERE champId='" + champId + "'";
             //  + "VALUES ('" + champId + "','" + date + "')";
             int d = stmt.executeUpdate(query);
-            System.out.println(query);
+            System.out.println(ANSI_GREEN + query + ANSI_RESET);
 
         } catch (Exception ex) {
             System.out.println(ANSI_RED + " \nDatabase Import Error:" + ex + ANSI_RESET);
@@ -87,7 +133,7 @@ public class dbConnect {
             String query = "INSERT INTO gameinfo ( GameID, winnerTeam, loserTeam, winnerScore, loserScore ) "
                     + "VALUES ('" + gameId + "', '" + wTeam + "', '" + lTeam + "', '" + wScore + "', '" + lScore + "')";
             int d = stmt.executeUpdate(query);
-            System.out.println(query);
+            System.out.println(ANSI_GREEN + query + ANSI_RESET);
 
         } catch (Exception ex) {
             System.out.println(ANSI_RED + " \nDatabase Import Error:" + ex + ANSI_RESET);
@@ -103,7 +149,7 @@ public class dbConnect {
             String query = "INSERT INTO champdata2019 (champId, team, fromDate) "
                     + "VALUES ('" + champId + "','" + team + "', '" + date + "')";
             int d = stmt.executeUpdate(query);
-            System.out.println(query);
+            System.out.println(ANSI_GREEN + query + ANSI_RESET);
 
         } catch (Exception ex) {
             System.out.println(ANSI_RED + " \nDatabase Import Error:" + ex + ANSI_RESET);
