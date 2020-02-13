@@ -34,15 +34,15 @@ public static void writeLastRunDate(){
 /*
 	String date = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
 	String[] dateArray = date.split("-");
-	String dayNow = dateArray[0];
-	String monthNow = dateArray[1];
-	String yearNow = dateArray[2];
+	int dayNow          =  Integer.parseInt(dateArray[0]);
+	int monthNow        =  Integer.parseInt(dateArray[1]);
+	int yearNow         =  Integer.parseInt(dateArray[2]);
 	
 	String lastRunDate = readLastRunDate();
 	String[] lastRunDateArray = date.split("-");
-	String lastRunDay = lastRunDateArray[0];
-	String lastRunMonth = lastRunDateArray[1];
-	String lastRunYear = lastRunDateArray[2];
+	int lastRunDay =  Integer.parseInt(lastRunDateArray[0]);
+	int lastRunMonth =  Integer.parseInt(lastRunDateArray[1]);
+	int lastRunYear =  Integer.parseInt(lastRunDateArray[2]);
 	
 	for (int monthCounter = lastRunMonth; monthCounter <= monthNow; monthCounter++) {
 		for (dayCounter = lastRunDay; dayCounter <= dayNow; dayCounter++) {
