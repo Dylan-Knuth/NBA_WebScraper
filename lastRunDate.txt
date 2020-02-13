@@ -28,10 +28,7 @@ public static void writeLastRunDate(){
     }
 	
 	################################################################################################################################################################
-	
-	
-	
-/*
+
 	String date = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
 	String[] dateArray = date.split("-");
 	int dayNow          =  Integer.parseInt(dateArray[0]);
@@ -45,16 +42,16 @@ public static void writeLastRunDate(){
 	int lastRunYear =  Integer.parseInt(lastRunDateArray[2]);
 	
 	for (int monthCounter = lastRunMonth; monthCounter <= monthNow; monthCounter++) {
-		for (dayCounter = lastRunDay; dayCounter <= dayNow; dayCounter++) {
-         	String url = "https://www.basketball-reference.com/boxscores/?month=" + monthCounter + "&day=" + dayCounter + "&year=2020";
-         	String gameDate = fixGameDate(scrapeGameDate(url)).trim();
-         	games = scrapeNBAGames(url, gameDate);
-         	LinkedHashMap<String, String> winnerInfo = new LinkedHashMap<>();
-         	LinkedHashMap<String, String> loserInfo = new LinkedHashMap<>();
-         	winnerInfo = games.get(0);
-         	loserInfo = games.get(1);
-         	importGameData(gameDate, winnerInfo, loserInfo);
-			
+		for (int dayCounter = lastRunDay; dayCounter <= dayNow; dayCounter++) {
+			String url = "https://www.basketball-reference.com/boxscores/?month=" + monthCounter + "&day=" + dayCounter + "&year=2020";
+			String gameDate = fixGameDate(scrapeGameDate(url)).trim();
+			games = scrapeNBAGames(url, gameDate);
+			LinkedHashMap<String, String> winnerInfo = new LinkedHashMap<>();
+			LinkedHashMap<String, String> loserInfo = new LinkedHashMap<>();
+			winnerInfo = games.get(0);
+			loserInfo = games.get(1);
+			importGameData(gameDate, winnerInfo, loserInfo);
+
 			switch(monthCounter){
 				case 1:
 				case 3:
@@ -85,7 +82,32 @@ public static void writeLastRunDate(){
 						dayCounter = 0;
 					} 
 					break;
-			}			
+				}			
+			}
 		}
-	}
-*/
+		
+############################################################################################################################
+
+    LocalDate today = LocalDate.now();
+    String lastRunDate = readLastRunDate();
+    int lastRunDay =  Integer.parseInt(lastRunDateArray[0]);
+    int lastRunMonth =  Integer.parseInt(lastRunDateArray[1]);
+    int lastRunYear =  Integer.parseInt(lastRunDateArray[2]);
+    LocalDate lastRun = LocalDate.of(lastRunYear, lastRunMonth, lastRunDay);
+    
+    while(today.compareTo.lastRun == -1){
+    	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+	String formattedLastRun = lastRun.format(formatter);
+	int lastRunDay =  Integer.parseInt(lastRunDateArray[0]);
+	int lastRunMonth =  Integer.parseInt(lastRunDateArray[1]);
+	int lastRunYear =  Integer.parseInt(lastRunDateArray[2]);
+	
+	// DO SCRAPE STUFF
+	      System.out.printf("D: %s M: %s Y: %s ", lastRunDay, lastRunMonth, lastRunYear);
+
+    
+    lastrun.plusDays(1);
+    }
+
+    
+
