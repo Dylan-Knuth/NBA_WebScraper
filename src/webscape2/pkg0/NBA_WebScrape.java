@@ -8,7 +8,11 @@ package webscape2.pkg0;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -38,13 +42,48 @@ public class NBA_WebScrape {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException {
-        // TODO code application logic here
-        updateStandings();
-
-        int dayCounter = 1;
+//   updateStandings();
+        //  int dayCounter = 1;
         ArrayList<LinkedHashMap> games = new ArrayList();
+        LocalDate today = LocalDate.now();
+        String lastRunDate = readLastRunDate();
+
+        String[] lastRunDateArray = lastRunDate.split("-");
+        int lastRunDay = Integer.parseInt(lastRunDateArray[0]);
+        int lastRunMonth = Integer.parseInt(lastRunDateArray[1]);
+        int lastRunYear = Integer.parseInt(lastRunDateArray[2]);
+
+        LocalDate lastRun = LocalDate.of(lastRunYear, lastRunMonth, lastRunDay);
+        boolean isLater = today.isAfter(lastRun);
+
+        while (isLater) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+            String formattedLastRun = lastRun.format(formatter);
+            lastRunDateArray = formattedLastRun.split("-");
+
+            String lastRunDayString = lastRunDateArray[0];
+            String lastRunMonthString = lastRunDateArray[1];
+            String lastRunYearString = lastRunDateArray[2];
+            String url = "https://www.basketball-reference.com/boxscores/?" + lastRunMonthString + "=2&day=" + lastRunDayString + "&year=" + lastRunYearString;
+            String gameDate = fixGameDate(scrapeGameDate(url)).trim();
+
+            games = scrapeNBAGames(url, gameDate);
+            LinkedHashMap<String, String> winnerInfo = new LinkedHashMap<>();
+            LinkedHashMap<String, String> loserInfo = new LinkedHashMap<>();
+
+            winnerInfo = games.get(0);
+            loserInfo = games.get(1);
+            importGameData(gameDate, winnerInfo, loserInfo);
+
+            lastRun = lastRun.plusDays(1);
+            isLater = today.isAfter(lastRun);
+
+        }
+        writeLastRunDate();
+
+        // TODO code application logic here
         /*
-         for (dayCounter = 10; dayCounter <= 10; dayCounter++) {
+         for (dayCounter = 10; dayCounter <= 12; dayCounter++) {
 
          String url = "https://www.basketball-reference.com/boxscores/?month=2&day=" + dayCounter + "&year=2020";
          String gameDate = fixGameDate(scrapeGameDate(url)).trim();
@@ -58,7 +97,32 @@ public class NBA_WebScrape {
          importGameData(gameDate, winnerInfo, loserInfo);
 
          }
-         */
+         // */
+    }
+
+    public static void writeLastRunDate() throws IOException {
+        String date = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
+        String fileName = "lastRunDate.txt";
+        FileWriter fileWriter = new FileWriter(fileName);
+        PrintWriter printWriter = new PrintWriter(fileWriter);
+        printWriter.print(date);
+        printWriter.close();
+    }
+
+    public static String readLastRunDate() throws IOException {
+
+        String fileName = "lastRunDate.txt";
+        BufferedReader buff = new BufferedReader(new FileReader(fileName));
+        StringBuffer sb = new StringBuffer("");
+
+        String line = buff.readLine();
+        if (line != null) {
+            sb.append(line);
+        }
+
+        String lastRunDate = sb.toString();
+        String[] dateArray = lastRunDate.split("-");
+        return lastRunDate;
     }
 
     public static String scrapeGameDate(String url) throws IOException {
@@ -223,16 +287,17 @@ public class NBA_WebScrape {
             System.out.printf(ANSI_RED + "Scraping Standing Error: %s" + ANSI_RESET, ex);
 
         }
-          dbConnect conn = new dbConnect();
+        dbConnect conn = new dbConnect();
 
         for (Team t : teams) {
             //System.out.printf("name: %s city: %s conference: %s \n", t.name, t.city, t.conference);
             //System.out.printf("id: %s wins: %s loses: %s \n", t.id, t.wins, t.loses);
             //conn.importTeamData(t.id, t.name, t.city, t.conference);
-            conn.importStandings(t.id, t.wins, t.loses);
+            conn.updateStandings(t.id, t.wins, t.loses);
         }
         conn.disconnect();
     }
+
     public static void doOldChampStuff(String gameDate) throws IOException {
         String fileName = "champ.txt";
 
@@ -463,6 +528,7 @@ public class NBA_WebScrape {
             case "Suns":
                 abrv = "PHX";
                 break;
+            case "Portlan":
             case "Trail Blazers":
             case "Blazers":
                 abrv = "POR";
